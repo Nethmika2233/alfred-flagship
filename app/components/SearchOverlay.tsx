@@ -2,13 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { X, Search } from "lucide-react";
-
-// Importing the shared product blueprint structure
-const PRODUCT_DATA: Record<string, { title: string; price: string; img: string; desc: string }> = {
-  "1": { title: "Oversized Heavyweight Tee", price: "$45.00", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800", desc: "Crafted from custom-milled 300GSM luxury cotton yarn. Dropped shoulder profile with a high-density ribbed collar that holds its shape over time." },
-  "2": { title: "Boxy Premium Hoodie", price: "$90.00", img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800", desc: "Heavily brushed interior cotton fleece. Double-lined structured hood without drawstrings for a pristine, clean architectural aesthetic." },
-  "3": { title: "Luxury Minimalist Cap", price: "$30.00", img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800", desc: "Constructed from structured cotton twill fabric featuring a low-profile crown and an adjustable metal-buckled tonal strap closure." },
-};
+import { Product } from "@/app/types/product"; // Assumes the type file from Step 1 exists
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -18,10 +12,17 @@ interface SearchOverlayProps {
 export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
 
+  // Fetch data dynamically from the mock database API stream when the overlay opens
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
+      
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then((data) => setProducts(data))
+        .catch((err) => console.error("Database stream error:", err));
     } else {
       setQuery(""); // Reset query string when closed
     }
@@ -29,8 +30,8 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   if (!isOpen) return null;
 
-  // Convert the object entries into a searchable array and filter based on text matching
-  const filteredProducts = Object.entries(PRODUCT_DATA).filter(([id, product]) =>
+  // Perform client-side filter against the array streaming from the API
+  const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -86,10 +87,10 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 <p className="text-xs uppercase tracking-widest text-zinc-400 font-mono">No matching garments found</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {filteredProducts.map(([id, product]) => (
+                  {filteredProducts.map((product) => (
                     <a 
-                      key={id}
-                      href={`/shop/products/${id}`}
+                      key={product.id}
+                      href={`/shop/products/${product.id}`}
                       onClick={onClose}
                       className="flex items-center gap-4 p-2 border border-zinc-100 hover:border-black transition-all bg-white"
                     >
