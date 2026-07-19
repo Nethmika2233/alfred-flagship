@@ -13,7 +13,10 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  // 👈 Modified payload to accept an optional quantity property from the UI selection
+  addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
+  // 👈 Added the new functional type for removing an item
+  removeFromCart: (id: number, size: string) => void; 
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
@@ -24,23 +27,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = (newItem: Omit<CartItem, "quantity">) => {
+  const addToCart = (newItem: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+    // Default to adding 1 item if no specific quantity value is provided
+    const quantityToAdd = newItem.quantity ?? 1;
+
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex(
         (item) => item.id === newItem.id && item.size === newItem.size
       );
+      
       if (existingIndex > -1) {
         const updatedCart = [...prevCart];
-        updatedCart[existingIndex].quantity += 1;
+        updatedCart[existingIndex].quantity += quantityToAdd;
         return updatedCart;
       }
-      return [...prevCart, { ...newItem, quantity: 1 }];
+      
+      return [...prevCart, { ...newItem, quantity: quantityToAdd }];
     });
+    
     setIsOpen(true); // Automatically slide open the bag when an item is added
   };
 
+  // 👈 New functional logic: filtering out the designated item match cleanly
+  const removeFromCart = (id: number, size: string) => {
+    setCart((prevCart) =>
+      prevCart.filter((item) => !(item.id === id && item.size === size))
+    );
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, isOpen, setIsOpen }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, isOpen, setIsOpen }}>
       {children}
     </CartContext.Provider>
   );

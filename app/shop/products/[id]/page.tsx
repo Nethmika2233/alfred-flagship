@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useCart } from "@/app/context/CartContext"; // 👈 1. Import your cart context hook
+import { useCart } from "@/app/context/CartContext";
+import { Plus, Minus } from "lucide-react"; // 👈 Added for luxury minimalist quantity counter icons
 
 const PRODUCT_DATA: Record<string, { title: string; price: string; img: string; desc: string }> = {
   "1": { title: "Oversized Heavyweight Tee", price: "$45.00", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800", desc: "Crafted from custom-milled 300GSM luxury cotton yarn. Dropped shoulder profile with a high-density ribbed collar that holds its shape over time." },
@@ -18,7 +19,8 @@ export default function ProductDetailPage() {
   const product = id ? PRODUCT_DATA[id] : null;
   
   const [selectedSize, setSelectedSize] = useState("M");
-  const { addToCart } = useCart(); // 👈 2. Extract the addition functionality
+  const [quantity, setQuantity] = useState(1); // 👈 1. Added local state to track item count
+  const { addToCart } = useCart();
 
   if (!product) {
     return (
@@ -70,7 +72,7 @@ export default function ProductDetailPage() {
             <p className="text-xs uppercase tracking-widest leading-relaxed text-zinc-500 mb-8">{product.desc}</p>
             
             {/* Size Selector Layout */}
-            <div className="mb-8">
+            <div className="mb-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 block mb-3">Select Silhouette Size</span>
               <div className="flex gap-2">
                 {["S", "M", "L", "XL"].map((size) => (
@@ -89,16 +91,41 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* 👈 2. Added Quantity Selector Element */}
+            <div className="mb-8">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 block mb-3">Quantity</span>
+              <div className="flex items-center border border-zinc-200 w-32 justify-between">
+                <button 
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="p-2.5 hover:bg-zinc-50 transition-colors text-zinc-600"
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="text-xs font-mono font-medium">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="p-2.5 hover:bg-zinc-50 transition-colors text-zinc-600"
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
+            </div>
+
             {/* CTA Buy Buttons */}
-            {/* 👈 3. Hook the explicit item payload parameters directly into the onClick event handler */}
+            {/* 👈 3. Updated custom quantity property insertion directly inside payload context wrapper */}
             <button 
-              onClick={() => addToCart({
-                id: Number(id),
-                title: product.title,
-                price: product.price,
-                img: product.img,
-                size: selectedSize
-              })}
+              onClick={() => {
+                addToCart({
+                  id: Number(id),
+                  title: product.title,
+                  price: product.price,
+                  img: product.img,
+                  size: selectedSize,
+                  quantity: quantity // Forwards custom state value
+                });
+                // Reset quantity counter back to 1 for standard baseline interface setup
+                setQuantity(1);
+              }}
               className="w-full bg-black text-white text-xs font-bold uppercase tracking-[0.2em] py-4 border border-black hover:bg-zinc-900 transition-colors mb-4"
             >
               Add to Garment Bag

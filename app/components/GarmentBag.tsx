@@ -2,9 +2,11 @@
 
 import React from "react";
 import { useCart } from "../context/CartContext";
+import { X } from "lucide-react"; // 👈 Ensure lucide-react is installed and imported
 
 export default function GarmentBag() {
-  const { cart, isOpen, setIsOpen } = useCart();
+  // 👈 1. Make sure removeFromCart is destructured right here!
+  const { cart, isOpen, setIsOpen, removeFromCart } = useCart(); 
 
   return (
     <div className={`fixed inset-0 z-50 ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
@@ -18,7 +20,7 @@ export default function GarmentBag() {
 
       {/* Sidebar Drawer Panel */}
       <div
-        className={`fixed top-0 right-0 z-55 h-full w-full sm:w-[450px] bg-white p-6 flex flex-col transform transition-transform duration-500 ease-in-out bg-white shadow-2xl ${
+        className={`fixed top-0 right-0 z-55 h-full w-full sm:w-[450px] bg-white p-6 flex flex-col transform transition-transform duration-500 ease-in-out shadow-2xl ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -46,7 +48,7 @@ export default function GarmentBag() {
             </div>
           ) : (
             cart.map((item, idx) => (
-              <div key={`${item.id}-${item.size}-${idx}`} className="flex gap-4 items-center border-b border-zinc-50 pb-4">
+              <div key={`${item.id}-${item.size}-${idx}`} className="flex gap-4 items-center border-b border-zinc-50 pb-4 relative group">
                 <div className="w-20 h-24 bg-zinc-50 overflow-hidden flex-shrink-0">
                   <img src={item.img} alt={item.title} className="w-full h-full object-cover mix-blend-darken" />
                 </div>
@@ -55,6 +57,15 @@ export default function GarmentBag() {
                   <p className="text-[10px] font-mono text-zinc-400 mt-0.5">Size: {item.size} / Qty: {item.quantity}</p>
                   <p className="text-xs font-mono text-zinc-600 mt-2">{item.price}</p>
                 </div>
+                
+                {/* 👈 2. The dynamic handler mapping both ID and selected Size */}
+                <button 
+                  onClick={() => removeFromCart(item.id, item.size)}
+                  className="text-zinc-400 hover:text-black transition-colors p-1 absolute right-0 top-2 z-10 cursor-pointer"
+                  title="Remove item"
+                >
+                  <X size={14} />
+                </button>
               </div>
             ))
           )}
