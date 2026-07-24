@@ -2,12 +2,14 @@
 
 import { useState } from "react"; // 👈 1. Import useState hook
 import { motion } from "framer-motion";
-import { ShoppingBag, Search } from "lucide-react";
+import { ShoppingBag, Search, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useCart } from "@/app/context/CartContext";
 import SearchOverlay from "@/app/components/SearchOverlay"; // 👈 2. Import the new search overlay
 
 export default function Navbar() {
   const { cart, setIsOpen } = useCart();
+  const { data: session } = useSession();
   const [isSearchOpen, setIsSearchOpen] = useState(false); // 👈 3. Initialize search visibility state
 
   // Dynamically calculate total items in the garment bag
@@ -32,19 +34,26 @@ export default function Navbar() {
           </a>
         </div>
         
-        <div className="text-xl font-serif tracking-[0.3em] font-semibold absolute left-1/2 -translate-x-1/2">
-          <a href="/">ALFRED</a>
+        <div className="text-base sm:text-xl font-display tracking-[0.2em] font-semibold absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+          <a href="/">ALFRED CLOTHING</a>
         </div>
         
         <div className="flex gap-6 items-center">
           {/* 👈 4. Wired up button to open the search overlay */}
-          <button 
+          <button
             onClick={() => setIsSearchOpen(true)}
             className="hover:opacity-60 transition-opacity"
           >
             <Search size={16} />
           </button>
-          
+
+          <a
+            href={session ? "/shop/account/orders" : "/login"}
+            className="hover:opacity-60 transition-opacity"
+          >
+            <User size={16} />
+          </a>
+
           {/* Wired up button to open the sidebar drawer */}
           <button 
             onClick={() => setIsOpen(true)}

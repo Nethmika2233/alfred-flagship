@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { X, Search } from "lucide-react";
-import { Product } from "@/app/types/product"; // Assumes the type file from Step 1 exists
+import { formatLKR } from "@/lib/currency";
+import type { ProductCardDTO } from "@/types/product";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -12,13 +13,13 @@ interface SearchOverlayProps {
 export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductCardDTO[]>([]);
 
-  // Fetch data dynamically from the mock database API stream when the overlay opens
+  // Fetch the full catalog once when the overlay opens, then filter client-side as the user types
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
-      
+
       fetch("/api/products")
         .then((res) => res.json())
         .then((data) => setProducts(data))
@@ -30,9 +31,8 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   if (!isOpen) return null;
 
-  // Perform client-side filter against the array streaming from the API
   const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(query.toLowerCase())
+    product.name.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -72,9 +72,9 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 Suggested Collections
               </h3>
               <div className="flex flex-col gap-3 text-xs uppercase tracking-widest text-zinc-600">
-                <button onClick={() => setQuery("Tee")} className="text-left hover:text-black transition-colors">Tees & Tops</button>
-                <button onClick={() => setQuery("Hoodie")} className="text-left hover:text-black transition-colors">Premium Outerwear</button>
-                <button onClick={() => setQuery("Cap")} className="text-left hover:text-black transition-colors">Architectural Accessories</button>
+                <button onClick={() => setQuery("Tee")} className="text-left hover:text-black transition-colors">Printed Tees</button>
+                <button onClick={() => setQuery("Blazer")} className="text-left hover:text-black transition-colors">Office Wear</button>
+                <button onClick={() => setQuery("Dress")} className="text-left hover:text-black transition-colors">Dresses</button>
               </div>
             </div>
           ) : (
@@ -88,18 +88,18 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {filteredProducts.map((product) => (
-                    <a 
+                    <a
                       key={product.id}
                       href={`/shop/products/${product.id}`}
                       onClick={onClose}
                       className="flex items-center gap-4 p-2 border border-zinc-100 hover:border-black transition-all bg-white"
                     >
                       <div className="w-16 h-20 bg-zinc-50 overflow-hidden flex-shrink-0">
-                        <img src={product.img} alt={product.title} className="w-full h-full object-cover mix-blend-darken" />
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover mix-blend-darken" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 truncate">{product.title}</h4>
-                        <p className="text-xs font-mono text-zinc-500 mt-1">{product.price}</p>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 truncate">{product.name}</h4>
+                        <p className="text-xs font-mono text-zinc-500 mt-1">{formatLKR(product.basePrice)}</p>
                       </div>
                     </a>
                   ))}

@@ -41,7 +41,7 @@ export default function ShopLayout({
             </div>
           </div>
           <div className="mt-12 border-t border-zinc-200/60 pt-6 text-center text-[10px] uppercase tracking-[0.15em] text-zinc-400">
-            © {new Date().getFullYear()} Alfred Studio. All Rights Reserved.
+            © {new Date().getFullYear()} Alfred Clothing. All Rights Reserved.
           </div>
         </div>
       </footer>
