@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -15,14 +14,14 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String
-  name          String?
-  role          Role     @default(CUSTOMER)
-  orders        Order[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(CUSTOMER)
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // 2. High-Fashion Brands & Collections
@@ -46,9 +45,12 @@ model Category {
 model Product {
   id          String           @id @default(uuid())
   name        String
+  slug        String?          @unique
   description String           @db.Text
+  images      String[]         @default([])
   basePrice   Decimal          @db.Decimal(10, 2)
   isFeatured  Boolean          @default(false)
+  isArchived  Boolean          @default(false)
   brandId     String
   brand       Brand            @relation(fields: [brandId], references: [id])
   categoryId  String
@@ -60,16 +62,17 @@ model Product {
 
 // 4. Precise Inventory Stocks (Sizes & Colors)
 model ProductVariant {
-  id            String      @id @default(uuid())
-  productId     String
-  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sku           String      @unique // Stock Keeping Unit (e.g., ALF-TSHIRT-BLK-M)
-  size          String      // e.g., "S", "M", "L", "XL"
-  color         String      // e.g., "Pitch Black", "Off-White"
-  stockQuantity Int         @default(0)
-  orderItems    OrderItem[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             String      @id @default(uuid())
+  productId      String
+  product        Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku            String      @unique // Stock Keeping Unit (e.g., ALF-TSHIRT-BLK-M)
+  size           String // e.g., "S", "M", "L", "XL"
+  color          String // e.g., "Pitch Black", "Off-White"
+  stockQuantity  Int         @default(0)
+  isDiscontinued Boolean     @default(false)
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 // 5. Transaction Logs & E-Commerce Metrics
@@ -93,17 +96,18 @@ model Order {
   totalAmount       Decimal           @db.Decimal(10, 2)
   paymentStatus     PaymentStatus     @default(PENDING)
   fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)
+  shippingAddress   Json?
   orderItems        OrderItem[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
 
 model OrderItem {
-  id         String         @id @default(uuid())
-  orderId    String
-  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variantId  String
-  variant    ProductVariant @relation(fields: [variantId], references: [id])
-  quantity   Int
-  pricePaid  Decimal        @db.Decimal(10, 2) // Locks the price at the exact moment of checkout
+  id        String         @id @default(uuid())
+  orderId   String
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int
+  pricePaid Decimal        @db.Decimal(10, 2) // Locks the price at the exact moment of checkout
 }

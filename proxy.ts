@@ -10,6 +10,7 @@ export default auth((req) => {
   const isAdminRoute = pathname.startsWith("/admin")
   const isSellerRoute = pathname.startsWith("/seller")
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/signup")
+  const isCustomerRoute = pathname.startsWith("/shop/checkout") || pathname.startsWith("/shop/account")
 
   // Case A: User is on an auth page but already logged in -> redirect based on role
   if (isAuthRoute && isLoggedIn) {
@@ -21,6 +22,13 @@ export default auth((req) => {
   // Case B: User tries to access protected areas without authenticating
   if ((isAdminRoute || isSellerRoute) && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url))
+  }
+
+  // Case B.1: Any signed-in customer area (checkout, order history) requires a session
+  if (isCustomerRoute && !isLoggedIn) {
+    const loginUrl = new URL("/login", req.url)
+    loginUrl.searchParams.set("callbackUrl", pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Case C: Regular logged-in customer attempts to access Admin control hubs
@@ -36,7 +44,7 @@ export default auth((req) => {
   return NextResponse.next()
 })
 
-// Configure our middleware matcher arrays to look across application routes
+// Configure our route matcher arrays to look across application routes
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }
