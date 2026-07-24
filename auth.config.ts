@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth"
+import type { Role } from "@prisma/client"
 
 export const authConfig = {
   pages: {
@@ -16,12 +17,12 @@ export const authConfig = {
     },
     // 2. Forward the role from the JWT token into the client session context
     async session({ session, token }) {
-  if (token && session.user) {
-    session.user.id = token.id as string
-    session.user.role = token.role as any // bypass strict initial check until types fully refresh
-  }
-  return session
-},
+      if (token && session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as Role
+      }
+      return session
+    },
   },
   providers: [], // We will supply our custom Credential Forms handling here in later steps
 } satisfies NextAuthConfig
