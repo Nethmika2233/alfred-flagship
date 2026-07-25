@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma"
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   session: { strategy: "jwt" },
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
