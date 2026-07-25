@@ -2,7 +2,7 @@
 
 A full-stack e-commerce platform built for a real small fashion brand — complete shopping experience, seller inventory management with image uploads, and an admin dashboard for order fulfillment.
 
-**[Live Demo](#)** &nbsp;·&nbsp; Built with Next.js 16, React 19, TypeScript, Prisma, and PostgreSQL
+**[Live Demo](https://alfred-flagship.vercel.app)** &nbsp;·&nbsp; Built with Next.js 16, React 19, TypeScript, Prisma, and PostgreSQL
 
 <!--
   Add a few screenshots here before sharing this repo, e.g.:
